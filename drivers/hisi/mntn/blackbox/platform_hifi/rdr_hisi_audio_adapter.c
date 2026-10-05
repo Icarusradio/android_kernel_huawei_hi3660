@@ -382,6 +382,13 @@ static int create_dir(char *path)
 	WARN_ON(NULL == path);
 
 	fd = sys_access(path, 0);
+	/*
+	 * The path walk also visits /data. Preserve existing directory ownership;
+	 * only directories created for this dump need root:system ownership.
+	 */
+	if (!fd)
+		return 0;
+
 	if (fd) {
 		BB_PRINT_PN("need create dir %s\n", path);
 		fd = sys_mkdir(path, 0770);
