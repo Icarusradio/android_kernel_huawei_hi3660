@@ -73,6 +73,8 @@
 #endif
 
 #define WINDOW_LEN                   (10)
+#define MILLI_TO_MICRO               (1000)
+#define VOLT_TO_MICRO                (1000000)
 #define CAPACITY_DEC_WINDOW_LEN                   (20)
 struct batt_dsm {
 	int error_no;
@@ -200,6 +202,8 @@ static enum power_supply_property hisi_usb_props[] = {
 static enum power_supply_property hisi_ac_props[] = {
 	POWER_SUPPLY_PROP_ONLINE,
 	POWER_SUPPLY_PROP_HEALTH,
+	POWER_SUPPLY_PROP_VOLTAGE_MAX,
+	POWER_SUPPLY_PROP_CURRENT_MAX,
 };
 
 static enum power_supply_property hisi_wireless_props[] = {
@@ -1306,6 +1310,30 @@ static int hisi_ac_get_property(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_HEALTH:
 		val->intval = di->power_supply_status;
 		break;
+	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
+		val->intval = 0;
+#ifdef CONFIG_HUAWEI_CHARGER
+		if (di->ac_online &&
+		    charge_get_charger_type() != CHARGER_TYPE_WIRELESS) {
+			/* FCP's negotiated 9 V does not need an ADC read. */
+			if (charge_get_charger_type() == CHARGER_TYPE_FCP &&
+			    fcp_get_stage_status() == FCP_STAGE_SUCESS)
+				val->intval = ADAPTER_9V * VOLT_TO_MICRO;
+			else
+				val->intval = MILLI_TO_MICRO *
+					get_charger_vbus_vol();
+		}
+#endif
+		break;
+	case POWER_SUPPLY_PROP_CURRENT_MAX:
+		val->intval = 0;
+#ifdef CONFIG_HUAWEI_CHARGER
+		if (di->ac_online &&
+		    charge_get_charger_type() != CHARGER_TYPE_WIRELESS)
+			val->intval = MILLI_TO_MICRO *
+				get_charger_input_current();
+#endif
+		break;
 	default:
 		return -EINVAL;
 	}
@@ -1337,7 +1365,6 @@ static int hisi_wireless_get_property(struct power_supply *psy,
 }
 
 
-#define MILLI_TO_MICRO    (1000)
 static int hisi_usb_get_property(struct power_supply *psy,
 				 enum power_supply_property psp,
 				 union power_supply_propval *val)

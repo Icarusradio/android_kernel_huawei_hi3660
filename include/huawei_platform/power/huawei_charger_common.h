@@ -13,6 +13,7 @@ struct charge_extra_ops {
 	enum huawei_usb_charger_type (*get_charger_type)(void);
 	int (*set_state)(int state);
 	int (*get_charge_current)(void);
+	int (*get_input_current)(void);
 };
 
 int charge_extra_ops_register(struct charge_extra_ops *ops);
@@ -25,6 +26,7 @@ int charge_check_charger_plugged(void);
 int charge_check_input_dpm_state(void);
 int get_charger_vbus_vol(void);
 int get_charge_current_max(void);
+int get_charger_input_current(void);
 int get_charger_ibus_curr(void);
 
 #endif

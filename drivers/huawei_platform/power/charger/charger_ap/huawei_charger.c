@@ -4189,6 +4189,17 @@ static int huawei_get_charge_current_max(void)
 	}
 	return di->charge_current;
 }
+
+static int huawei_get_input_current(void)
+{
+	struct charge_device_info *di = g_di;
+
+	if (!di || di->charger_type == CHARGER_REMOVED)
+		return 0;
+
+	return READ_ONCE(di->input_current);
+}
+
 int set_otg_switch_mode_enable(void)
 {
 	struct charge_device_info *di = g_di;
@@ -5430,6 +5441,7 @@ static struct charge_extra_ops huawei_charge_extra_ops = {
 	.get_charger_type = huawei_get_charger_type,
 	.set_state = set_charge_state,
 	.get_charge_current = huawei_get_charge_current_max,
+	.get_input_current = huawei_get_input_current,
 };
 /*lint -restore*/
 

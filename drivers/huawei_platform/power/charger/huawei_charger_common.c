@@ -202,3 +202,12 @@ int get_charge_current_max(void)
 	}
 	return g_extra_ops->get_charge_current();
 }
+
+/* Selected input current limit in mA, including charging/thermal limits. */
+int get_charger_input_current(void)
+{
+	if (!g_extra_ops || !g_extra_ops->get_input_current)
+		return 0;
+
+	return g_extra_ops->get_input_current();
+}
